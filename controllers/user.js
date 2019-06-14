@@ -2,11 +2,30 @@ const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const passport = require('passport');
 const User = require('../models/User');
+const Vote = require('../models/Vote');
 
 module.exports = {
   /* *** GET ENDPOINTS *** */
   login: (req, res) => res.render('auth/login'),
   register: (req, res) => res.render('auth/register'),
+  vote: (req, res) => {
+    const newvote = new Vote({
+              name: req.body.party,
+              vote: 1
+    });                
+
+    User.update({
+            "email" : 'b@b.com'}
+            ,{
+                $set: { "voted" : true}
+        }, function (err, success) {
+            if (err) {
+                res.send(err);
+            } else {
+              res.send(req.body);
+            }
+        });
+  },
   logout: (req, res) => {
     req.logout();
     res.redirect('/auth/login');
@@ -39,7 +58,8 @@ module.exports = {
             const newUser = new User({
               name: req.body.name,
               email: req.body.email,
-              password: req.body.password
+              password: req.body.password,
+              voted: false
             });
             bcrypt.genSalt(10, (err, salt) => {
               bcrypt.hash(newUser.password, salt, (err, hash) => {
